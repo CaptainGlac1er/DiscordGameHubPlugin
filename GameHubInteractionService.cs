@@ -10,8 +10,12 @@ namespace GlacierByte.Discord.Plugin
 {
     public class GameHubInteractionService : ICustomService {
         private readonly DiscordSocketClient Client;
+
+        private IDictionary<string, Game> GamesAvailable;
+
         public GameHubInteractionService(DiscordSocketClient client)
         {
+            GamesAvailable = new Dictionary<string, Game>();
             Client = client;
             client.ModalSubmitted += ModalHandler;
         }
@@ -25,12 +29,29 @@ namespace GlacierByte.Discord.Plugin
             await context.Interaction.RespondWithModalAsync(newGameModal.Build());
         }
 
+        public List<string> GetGameNames() {
+            return GamesAvailable.Keys.ToList();
+        }
+
+        public List<ulong> GetListOfPlayersThatPlayGame(string gameName) {
+            if(!GamesAvailable.ContainsKey(gameName)) {
+                return new List<ulong>();
+            }
+            return GamesAvailable[gameName].getListOfPlayersPlayingGame();
+        }
+
         public async Task ModalHandler(SocketModal modal) {
             var components = modal.Data.Components.ToList();
             switch(modal.Data.CustomId) {
                 case "new_game":
-                    var newGame = components.Single(x => x.CustomId == "game_name");
-                    await modal.RespondAsync($"You added {newGame.Value}");
+                    var newGameName = components.Single(x => x.CustomId == "game_name");
+                    await modal.RespondAsync($"You added {newGameName.Value}");
+                    var gameName = newGameName.Value;
+                    if(!GamesAvailable.ContainsKey(gameName)) {
+                        var newGame = new Game(gameName);
+                        newGame.addPlayerThatWantsToPlay(Client.CurrentUser.Id);
+                        GamesAvailable.Add(gameName, newGame);
+                    }
                     break;
                 default:
                     await modal.RespondAsync();
