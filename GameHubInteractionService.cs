@@ -10,14 +10,19 @@ namespace GlacierByte.Discord.Plugin
 {
     public class GameHubInteractionService : ICustomService {
         private readonly DiscordSocketClient Client;
+        private readonly LongTermFileService FileService;
 
         private IDictionary<string, Game> GamesAvailable;
 
-        public GameHubInteractionService(DiscordSocketClient client)
+        public GameHubInteractionService(
+            DiscordSocketClient client,
+            LongTermFileService fileStorage
+            )
         {
             GamesAvailable = new Dictionary<string, Game>();
             Client = client;
             client.ModalSubmitted += ModalHandler;
+            FileService = fileStorage;
         }
 
         public async Task AddGameAsync(IInteractionContext context) {
@@ -57,6 +62,14 @@ namespace GlacierByte.Discord.Plugin
                     await modal.RespondAsync();
                     break;
             }
+        }
+
+        public async Task SaveState() {
+            await FileService.setFileData("state.GameHub.json", GamesAvailable);
+        }
+
+        public async Task LoadState() {
+            GamesAvailable = await FileService.getFileData<IDictionary<string, Game>>("state.GameHub.json");
         }
 
     }

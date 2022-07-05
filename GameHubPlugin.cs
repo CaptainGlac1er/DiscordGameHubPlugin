@@ -23,6 +23,20 @@ namespace GlacierByte.Discord.Plugin {
             playerString += "]";
             await RespondAsync(playerString);
         }
+        [SlashCommand("save_state", "Save state of Game Service")]
+        public async Task SaveState() {
+            try {
+                await Service.SaveState();
+                await RespondAsync("State saved");
+            } catch (Exception e) {
+                await RespondAsync(e.Message);
+            }
+        }
+        [SlashCommand("load_state", "Save state of Game Service")]
+        public async Task LoadState() {
+            await Service.LoadState();
+            await RespondAsync("State loaded");
+        }
     }
 
 }

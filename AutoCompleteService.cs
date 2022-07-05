@@ -10,6 +10,7 @@ public class GameAutocompleteHandler : AutocompleteHandler
     }
     public override async Task<AutocompletionResult> GenerateSuggestionsAsync(IInteractionContext context, IAutocompleteInteraction autocompleteInteraction, IParameterInfo parameter, IServiceProvider services)
     {
+        Console.WriteLine(autocompleteInteraction.Data);
         List<AutocompleteResult> results = new List<AutocompleteResult>();
         foreach(var key in this.Service.GetGameNames()) {
             results.Add(new AutocompleteResult(key, key));
